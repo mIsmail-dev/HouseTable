@@ -5,6 +5,7 @@ const mongoose = require('mongoose')
 const express = require('express')
 
 const patientRoutes = require('./routes/patientRoutes')
+const appointmentRoutes = require('./routes/appointmentRoutes')
 
 const app = express()
 
@@ -17,6 +18,7 @@ app.use(express.json())
 app.use(morgan('tiny'))
 
 app.use('/api/patients', patientRoutes)
+app.use('/api/appointments', appointmentRoutes)
 
 app.get('/', (req, res) => {
     res.send('App is running...')
