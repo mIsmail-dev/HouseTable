@@ -2,28 +2,58 @@ const {Appointment, validate} = require('../models/appointmentModel')
 const { Patient } = require('../models/patientModel')
 const mongoose = require('mongoose')
 const express = require('express')
+const e = require('express')
 const router = express.Router()
 
-// Get a list of all appointments for a specific patient. 
+// Get a list of all appointments for a specific patient. , Get a list of appointments for a specific day. , Get a list of unpaid appointments.
 router.get('/findAll', async (req, res) => {
     try {
         // First Check if the patient id is present or not.
-        if(!req.query.patientId) {
-            return res.status(404).send('Kindly Send the Patient Id.') 
-        }
-        console.log("Patient Id: ", req.query.patientId)
-        
-        // Find the Patient by Given PatientId
-        const patient = await Patient.findById(req.query.patientId)
-        // if not found, return 404 (Resource not found)
-        if(!patient) {
-            return res.status(404).send('The patient with given ID was not found')
+        if(!req.query.patientId && !req.query.day && !req.query.unpaid) {
+            return res.status(404).send('Kindly send the Patient Id or Day of Appointment.') 
         }
 
-        // find Appointments of patient with Given PatientId Here
+        let unpaid;
+        if(req.query.unpaid) {
+            console.log("Hahahah")
+            unpaid = 'false'
+        } else {
+            unpaid = 'true'
+        }
+
+        // unpaid = !(Boolean(req.query.unpaid))
+        // unpaid = String(unpaid)
+        console.log("Patient Id: ", req.query.patientId)
+        console.log("day: ", req.query.day)
+        console.log("unpaid: ", req.query.unpaid)
+        console.log("unpaid: ", unpaid)
+        console.log("unpaid: ", typeof req.query.unpaid)
+        
+        if(req.query.patientId) {
+            // Find the Patient by Given PatientId
+            const patient = await Patient.findById(req.query.patientId)
+            // if not found, return 404 (Resource not found)
+            if(!patient) {
+                return res.status(404).send('The patient with given ID was not found')
+            }
+        }
+
+        // Used Optional Spread Operators for this Query
+
+        const arr = [ { ...(req.query.patientId ? { patient: req.query.patientId} : {})},
+            {...(req.query.day ? { day: req.query.day } : {}) },
+            {...(unpaid ? { isPaid: unpaid } : {}) } ]
+
+        console.log("Arr: ", arr)
+        
+        // find Appointments with Given Query Strings Here
         const appointments = await Appointment
-                                        .find({ patient: req.query.patientId })
-                                        .populate('patient', 'name -_id') // Populate will fetch the data from the refrence document. (-_id is for Ignoring this Feild)
+                                        .find() // { patient: req.query.patientId,  day: req.query.day  }
+                                        .and([ { ...(req.query.patientId ? { patient: req.query.patientId} : {}) },
+                                            {...(req.query.day ? { day: req.query.day } : {}) },
+                                            {...(req.query.unpaid ? { isPaid: req.query.unpaid } : {}) } ])
+                                        // .or([ { patient: req.query.patientId }, { day: req.query.day } ])
+                                        .populate('patient', 'name') // Populate will fetch the data from the refrence document. (-_id is for Ignoring this Feild)
                                         .sort("date")
 
         // if found then return the Appointment
