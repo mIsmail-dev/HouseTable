@@ -3,7 +3,40 @@ const { Patient } = require('../models/patientModel')
 const express = require('express')
 const router = express.Router()
 
+// Get a list of all appointments for a specific patient. 
+router.get('/findAll', async (req, res) => {
+    try {
+        // First Check if the patient id is present or not.
+        if(!req.query.patientId) {
+            return res.status(404).send('Kindly Send the Patient Id.') 
+        }
+        console.log("Patient Id: ", req.query.patientId)
+        
+        // Find the Patient by Given PatientId
+        const patient = await Patient.findById(req.query.patientId)
+        // if not found, return 404 (Resource not found)
+        if(!patient) {
+            return res.status(404).send('The patient with given ID was not found')
+        }
+
+        // find Appointments of patient with Given PatientId Here
+        const appointments = await Appointment
+                                        .find({ patient: req.query.patientId })
+                                        .populate('patient', 'name -_id') // Populate will fetch the data from the refrence document. (-_id is for Ignoring this Feild)
+                                        .sort("date")
+
+        // if found then return the Appointment
+        res.send(appointments)
+    } catch (err) {
+        // res.send("Hi, There")
+        console.log("Error: ", err.message)
+        res.status(404).send(err.message)
+    }
+    
+})
+
 router.get('/', async (req, res) => {
+    console.log("Query Params: ", req.query)
     const appointments = await Appointment.find({}).sort('date')
     res.send(appointments)
 })
@@ -27,28 +60,7 @@ router.get('/:id', async (req, res) => {
     
 })
 
-// Get a list of all appointments for a specific patient - Have to do it. Man :) Note: This will happen In patient Route Man. Bcz patient document has all the appointments in an array. So, It would be easy & also should do in Pateint Man.
-router.get('/patients/:id', async (req, res) => {
-    try {
-        // find Appointment Here
-        const appointment = await Appointment.findById(req.params.id)
-
-        // if not found, return 404 (Resource not found)
-        if(!appointment) {
-            return res.status(404).send('The appointment with given ID was not found')
-        }
-
-        // if found then return the Appointment
-        res.send(appointment)   
-    } catch (err) {
-        console.log("Error: ", err.message)
-        res.status(404).send(err.message)
-    }
-    
-})
-
 // Note - we are doing this bcz what if Appointment has 50 properties, we don't want to add 50. we just want to add the properties which we want. Also, _v is also present in a document, we also don't want to add it. That's why we choose this method man.
-
 router.post('/', async (req, res) => {
     const {error} = validate(req.body)
 

@@ -1,6 +1,5 @@
 const mongoose = require('mongoose')
 const Joi = require('joi')
-            // .extend(require('@joi/date')) // Added for Checking Joi Date type also. Joi Checks all inputs(- got to some research on this.)
 
 const appointmentSchema = new mongoose.Schema({
     startTime: {
