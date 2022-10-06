@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const Joi = require('joi')
+            // .extend(require('@joi/date')) // Added for Checking Joi Date type also. Joi Checks all inputs(- got to some research on this.)
 
 const appointmentSchema = new mongoose.Schema({
     startTime: {
@@ -50,10 +51,13 @@ const Appointment = new mongoose.model('Appointment', appointmentSchema)
 // check if the appointment is valid according to the schema or not
 const validAppointment = (appointment) => {
     const schema = {
+        startTime: Joi.date().iso().required(),
+        endTime: Joi.date().iso().required(),
         description: Joi.string().min(5).max(255).required(),
         fee: Joi.number().min(0).required(),
         currency: Joi.string().required(),
         day: Joi.string().required(),
+        date: Joi.date().iso().required(),
         patientId: Joi.objectId().required(), // Why patientId bcz client will only patientId to us, he will not provide whole patient man. 
     }
 

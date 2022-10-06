@@ -63,7 +63,7 @@ router.post('/', async (req, res) => {
     if(!patient) {
         return res.status(404).send('The patient with given ID was not found')
     }
-    
+
     // Valid
     const newAppointment = new Appointment({
         startTime: req.body.startTime,
@@ -92,15 +92,14 @@ router.post('/', async (req, res) => {
         } catch (err) {
             console.log("Error: ", err.message)
             console.log("Should Roll Back to Inital Database State. - Appointment is Added in Database :/")
-            res.status(404).send(err.message)
+            // 500 - Internal Server Error
+            res.status(500).send(err.message)
         }
         
     } catch (err) {
         console.log("Error: ", err.message)
         res.status(404).send(err.message)
     }
-
-    
 })
 
 router.put('/:id', async (req, res) => {
