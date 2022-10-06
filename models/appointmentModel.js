@@ -55,6 +55,7 @@ const validAppointment = (appointment) => {
         description: Joi.string().min(5).max(255).required(),
         fee: Joi.number().min(0).required(),
         currency: Joi.string().required(),
+        isPaid: Joi.boolean(),
         day: Joi.string().required(),
         date: Joi.date().iso().required(),
         patientId: Joi.objectId().required(), // Why patientId bcz client will only patientId to us, he will not provide whole patient man. 

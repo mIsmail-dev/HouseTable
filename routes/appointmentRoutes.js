@@ -1,5 +1,6 @@
 const {Appointment, validate} = require('../models/appointmentModel')
 const { Patient } = require('../models/patientModel')
+const mongoose = require('mongoose')
 const express = require('express')
 const router = express.Router()
 
@@ -36,7 +37,6 @@ router.get('/findAll', async (req, res) => {
 })
 
 router.get('/', async (req, res) => {
-    console.log("Query Params: ", req.query)
     const appointments = await Appointment.find({}).sort('date')
     res.send(appointments)
 })
@@ -121,35 +121,46 @@ router.put('/:id', async (req, res) => {
         return res.status(400).send(error.details[0].message)
     }
 
-    // Should Remove this or Comment this. Bcz we have to update only Appointment Details. Not PatientId. So, There is no need to send this Patient Id in this Route, I think.
+    // find Appointment Here
+    let appointment = await Appointment.findById(req.params.id)
 
-    // Find the Patient by Given PatientId
+    // if not found, return 404 (Resource not found)
+    if(!appointment) {
+        return res.status(404).send('The appointment with given ID was not found')
+    }
+
+    // 2. Find the Patient by Given PatientId
     const patient = await Patient.findById(req.body.patientId)
     // if not found, return 404 (Resource not found)
     if(!patient) {
         return res.status(404).send('The patient with given ID was not found')
     }
 
-    // if Valid, then find the Customer and Update it.
-    let appointment = await Appointment.findByIdAndUpdate(req.params.id, { 
-        startTime: req.body.startTime,
-        endTime: req.body.endTime,
-        description: req.body.description,
-        fee: req.body.fee,
-        currency: req.body.currency,
-        isPaid: req.body.isPaid,
-        day: req.body.day,
-        date: req.body.date,
-        patient: req.body.patientId, 
-    }, {
-        new: true
-    })
+    try {
+        // if Valid, then find the Appointment and Update it.
+        appointment = await Appointment.findByIdAndUpdate(req.params.id, { 
+            startTime: req.body.startTime,
+            endTime: req.body.endTime,
+            description: req.body.description,
+            fee: req.body.fee,
+            currency: req.body.currency,
+            isPaid: req.body.isPaid,
+            day: req.body.day,
+            date: req.body.date,
+            patient: req.body.patientId, 
+        }, {
+            new: true
+        })
 
-    if(!appointment) {
-        return res.status(404).send("The Appointment with given ID was not found")
+        if(!appointment) {
+            return res.status(404).send("The Appointment with given ID was not found")
+        }
+
+        res.send(appointment)
+    } catch (err) {
+        console.log("Error: ", err.message)
+        res.status(404).send(err.message)
     }
-
-    res.send(appointment)
 })
 
 router.delete('/:id', async (req, res) => {
@@ -160,7 +171,26 @@ router.delete('/:id', async (req, res) => {
         return res.status(404).send("The Appointment with given ID was not found")
     }
 
-    res.send(appointment) // return the Appointment, which is deleted
+    //2. Remove this Appointment, also from the Appointment array of the patient.
+    const patient = await Patient.findById(appointment.patient)
+
+    // if not found, return 404 (Resource not found)
+    if(!patient) {
+        return res.status(404).send('The patient with given ID was not found')
+    }
+
+    const index = patient.appointments.indexOf(req.params.id);
+    if (index > -1) { // only splice array when item is found
+        patient.appointments.splice(index, 1); // 2nd parameter means remove one item only
+    }
+
+    try {
+        await patient.save()
+        res.send(appointment) // return the Appointment, which is deleted
+    } catch (error) {
+        console.log("Error: ", err.message)
+        res.status(404).send(err.message)
+    }
 })
 
 // Export all the routes
