@@ -14,20 +14,16 @@ router.get('/findAll', async (req, res) => {
         }
 
         let unpaid;
-        if(req.query.unpaid) {
+        if(req.query.unpaid === "true") {
             console.log("Hahahah")
             unpaid = 'false'
         } else {
             unpaid = 'true'
         }
 
-        // unpaid = !(Boolean(req.query.unpaid))
-        // unpaid = String(unpaid)
-        console.log("Patient Id: ", req.query.patientId)
-        console.log("day: ", req.query.day)
-        console.log("unpaid: ", req.query.unpaid)
+        // console.log("Patient Id: ", req.query.patientId)
+        // console.log("day: ", req.query.day)
         console.log("unpaid: ", unpaid)
-        console.log("unpaid: ", typeof req.query.unpaid)
         
         if(req.query.patientId) {
             // Find the Patient by Given PatientId
@@ -42,7 +38,7 @@ router.get('/findAll', async (req, res) => {
 
         const arr = [ { ...(req.query.patientId ? { patient: req.query.patientId} : {})},
             {...(req.query.day ? { day: req.query.day } : {}) },
-            {...(unpaid ? { isPaid: unpaid } : {}) } ]
+            {...(req.query.unpaid ? { isPaid: unpaid } : {}) } ]
 
         console.log("Arr: ", arr)
         
@@ -51,7 +47,7 @@ router.get('/findAll', async (req, res) => {
                                         .find() // { patient: req.query.patientId,  day: req.query.day  }
                                         .and([ { ...(req.query.patientId ? { patient: req.query.patientId} : {}) },
                                             {...(req.query.day ? { day: req.query.day } : {}) },
-                                            {...(req.query.unpaid ? { isPaid: req.query.unpaid } : {}) } ])
+                                            {...(req.query.unpaid ? { isPaid: unpaid } : {}) } ])
                                         // .or([ { patient: req.query.patientId }, { day: req.query.day } ])
                                         .populate('patient', 'name') // Populate will fetch the data from the refrence document. (-_id is for Ignoring this Feild)
                                         .sort("date")
