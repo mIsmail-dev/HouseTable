@@ -5,13 +5,151 @@ const express = require('express')
 const e = require('express')
 const router = express.Router()
 
+const getTodayDate = () => {
+    let today = new Date()
+    const dd = String(today.getDate() + 1).padStart(2, '0') // added 1 bcz it was giving one previous day like if today is 7 it will give 6.
+    const mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+    const yyyy = today.getFullYear()
+    today = mm + '-' + dd + '-' + yyyy;
+    return new Date(today)
+}
+
+const getSecondDate = (numOfWeeks, todayDate) => {
+    let secondDate = new Date()
+    secondDate.setDate(todayDate.getDate() - numOfWeeks * 7)
+    return secondDate
+}
+
+const getStringDate = (today) => {
+    const dd = String(today.getDate()).padStart(2, '0') // added 1 bcz it was giving one previous day like if today is 7 it will give 6.
+    const mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+    const yyyy = today.getFullYear()
+    today = mm + '-' + dd + '-' + yyyy;
+    return today
+}
+
+
+// Get a remaining bill for a specific patient.
+router.get('/remainingBill', async (req, res) => {
+    try {
+        // 1. Check Valid Patient Id
+        if(req.query.patientId) {
+            // Find the Patient by Given PatientId
+            const patient = await Patient.findById(req.query.patientId)
+            // if not found, return 404 (Resource not found)
+            if(!patient) {
+                return res.status(404).send('The patient with given ID was not found')
+            }
+        }
+
+        // 2. Find Current Date & Second Date with respect to period time
+        let today, numOfWeeks, secondDate
+        if(req.query.period) {
+            // Getting Today Date Here
+            today = getTodayDate()
+
+            // Geting Second Date Here with respect to period
+            // if period = weekly, then i will remove 1 week from current date
+            numOfWeeks;
+            if(req.query.period === "weekly") {
+                numOfWeeks = 1
+            } else if(req.query.period === "monthly") {
+                numOfWeeks = 4
+            } else {
+                numOfWeeks = 12
+            }
+
+            secondDate = getSecondDate(numOfWeeks, today)
+
+            // Converting Dates into Strings
+            today = getStringDate(today)
+
+            secondDate = getStringDate(secondDate)
+        }
+
+        // Check if currency is valid or not.
+        const currency = ['usd', 'eur']
+
+        if(req.query.currency && !currency.includes(req.query.currency)) {
+            return res.status(404).send('You can only get Bill in Euro or USD. So, try to send to Valid Currency.')
+        }
+
+        // For Currency Conversion
+        const currencyConversion = {
+            usd: 1.02, // Usd to eur
+            eur: 0.98, // Eur to Usd
+        }
+
+        // Object to count bill
+        const bill = {}
+
+        // find Appointments with Given Query Strings Here
+        const appointments = await Appointment
+                                        .find( { ...(req.query.period ? { date: { $gte: secondDate, $lte: today }} : {}) },) 
+                                        .and([ { ...(req.query.patientId ? { patient: req.query.patientId} : {}) }, // Used Optional Spread Operators for this Query 
+                                            ]) 
+        
+        // Checking Required Currency
+        const requiredCurrency = req.query.currency ? req.query.currency : 'usd' // Required Currency would be usd by default
+        
+        // Loop through All unpaid Appointments of the Patient, and there remaining Bill
+        const unpaid = appointments.reduce((acc, appointment) => {
+            if(!appointment.isPaid) {
+                if(appointment.currency !== requiredCurrency) {
+                    // console.log("currConversion: ", currencyConversion[appointment.currency ] )
+                    // console.log("curr: ", (appointment.fee * currencyConversion[appointment.currency]) )
+                    acc =  acc + (appointment.fee * currencyConversion[appointment.currency])
+                } else {
+                    acc = acc + appointment.fee
+                }
+            }
+            return acc
+        }, 0)
+
+
+        // Add Currency Here
+        bill.currency = requiredCurrency
+
+        if(req.query.patientId) {
+            bill.remainingBill = unpaid
+            return res.send(bill)
+        } else {
+            bill.unpaid = unpaid
+        }
+
+        // Loop through All paid Appointments of the Patient, and there remaining Bill
+        bill.paid = appointments.reduce((acc, appointment) => {
+            if(appointment.isPaid) {
+                if(appointment.currency !== requiredCurrency) {
+                    // console.log("currConversion: ", currencyConversion[appointment.currency ] )
+                    // console.log("curr: ", (appointment.fee * currencyConversion[appointment.currency]) )
+                    acc =  acc + (appointment.fee * currencyConversion[appointment.currency])
+                } else {
+                    acc = acc + appointment.fee
+                }
+            }
+            return acc
+        }, 0)
+
+        // Finding Total and Balance of hospital Here
+        const total = bill.paid + bill.unpaid
+        bill.balance = total - bill.paid
+
+        // return the bill Here
+        res.send(bill)
+    } catch (err) {
+        console.log("Error: ", err.message)
+        res.status(404).send(err.message)
+    }
+    
+})
+
 // Get a list of all appointments for a specific patient. , Get a list of appointments for a specific day. , Get a list of unpaid appointments.
 router.get('/findAll', async (req, res) => {
     try {
-
+        // Changing if Unpaid to other state or inverse State.
         let unpaid;
         if(req.query.unpaid === "true") {
-            console.log("Hahahah")
             unpaid = 'false'
         } else {
             unpaid = 'true'
@@ -51,7 +189,6 @@ router.get('/findAll', async (req, res) => {
         // if found then return the Appointment
         res.send(appointments)
     } catch (err) {
-        // res.send("Hi, There")
         console.log("Error: ", err.message)
         res.status(404).send(err.message)
     }
