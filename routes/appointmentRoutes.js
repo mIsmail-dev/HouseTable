@@ -8,10 +8,6 @@ const router = express.Router()
 // Get a list of all appointments for a specific patient. , Get a list of appointments for a specific day. , Get a list of unpaid appointments.
 router.get('/findAll', async (req, res) => {
     try {
-        // First Check if the patient id is present or not.
-        if(!req.query.patientId && !req.query.day && !req.query.unpaid) {
-            return res.status(404).send('Kindly send the Patient Id or Day of Appointment.') 
-        }
 
         let unpaid;
         if(req.query.unpaid === "true") {
@@ -23,7 +19,7 @@ router.get('/findAll', async (req, res) => {
 
         // console.log("Patient Id: ", req.query.patientId)
         // console.log("day: ", req.query.day)
-        console.log("unpaid: ", unpaid)
+        // console.log("unpaid: ", unpaid)
         
         if(req.query.patientId) {
             // Find the Patient by Given PatientId
@@ -36,16 +32,16 @@ router.get('/findAll', async (req, res) => {
 
         // Used Optional Spread Operators for this Query
 
-        const arr = [ { ...(req.query.patientId ? { patient: req.query.patientId} : {})},
-            {...(req.query.day ? { day: req.query.day } : {}) },
-            {...(req.query.unpaid ? { isPaid: unpaid } : {}) } ]
+        // const arr = [ { ...(req.query.patientId ? { patient: req.query.patientId} : {})},
+        //     {...(req.query.day ? { day: req.query.day } : {}) },
+        //     {...(req.query.unpaid ? { isPaid: unpaid } : {}) } ]
 
-        console.log("Arr: ", arr)
+        // console.log("Arr: ", arr)
         
         // find Appointments with Given Query Strings Here
         const appointments = await Appointment
                                         .find() // { patient: req.query.patientId,  day: req.query.day  }
-                                        .and([ { ...(req.query.patientId ? { patient: req.query.patientId} : {}) },
+                                        .and([ { ...(req.query.patientId ? { patient: req.query.patientId} : {}) }, // Used Optional Spread Operators for this Query
                                             {...(req.query.day ? { day: req.query.day } : {}) },
                                             {...(req.query.unpaid ? { isPaid: unpaid } : {}) } ])
                                         // .or([ { patient: req.query.patientId }, { day: req.query.day } ])
