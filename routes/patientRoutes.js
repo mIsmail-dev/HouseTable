@@ -5,7 +5,7 @@ const router = express.Router()
 
 router.get('/mostPopular', async (req, res) => {
     try {
-        // find customer Here
+        // find patient Here
         const patients = await Patient.find()
                                         .populate('appointments', 'fee isPaid')
 
