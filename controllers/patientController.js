@@ -81,20 +81,6 @@ const updatePatient = async (req, res) => {
         return res.status(400).send(error.details[0].message)
     }
 
-    // Check if the Appointments which user has given are of the same Patient or not. And Check if the given Appointments are present are not
-    req.body.appointments && req.body.appointments.forEach(async (appointmentId) => {
-        const appointment = await Appointment.findById(req.body.appointmentId)
-        // if not found, return 404 (Resource not found)
-        if(!appointment) {
-            return res.status(404).send('The appointment with given ID was not found')
-        } 
-
-        if(appointment.patient !== req.params.id) {
-            return res.status(404).send('You cannot assign other Patient Appointments. You can only assign Your Appointments.')
-        }
-    });
-
-    // if Valid, then find the Customer and Update it.
     try {
         let patient = await Patient.findByIdAndUpdate(req.params.id, {
             name: req.body.name,
