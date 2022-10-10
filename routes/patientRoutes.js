@@ -3,6 +3,61 @@ const { Appointment } = require('../models/appointmentModel')
 const express = require('express')
 const router = express.Router()
 
+router.get('/mostPopular', async (req, res) => {
+    try {
+        // find customer Here
+        const patients = await Patient.find()
+                                        .populate('appointments', 'fee isPaid')
+
+        const result = {}
+
+        // 1. Finding the the most popular pet Here
+        let max = 0
+        result.popularPet = patients.reduce((acc, patient) => {
+            if(patient.appointments.length > max) {
+                max = patient.appointments.length
+                acc.id = patient._id
+                acc.petName = patient.name
+                acc.totalAppointments = max
+            }
+            return acc
+        }, {})
+
+        // 2. how much money from each pet
+        result.petsDetail = patients.reduce((acc, patient) => {
+            const petDetail = {}
+            petDetail.id = patient._id
+            petDetail.petName = patient.name
+            // Counting Patient Paid Fee
+            petDetail.totalFeePaid = patient.appointments.reduce((sum, appointment) => {
+                if(appointment.isPaid) {
+                    console.log("hahah")
+                    sum = sum + appointment.fee
+                }
+                return sum
+            }, 0)
+            // Counting Patient UnPaid Fee
+            petDetail.totalFeeUnPaid = patient.appointments.reduce((sum, appointment) => {
+                if(!appointment.isPaid) {
+                    sum = sum + appointment.fee
+                }
+                return sum
+            }, 0)
+
+            acc.push(petDetail)
+            return acc
+        }, [])
+
+        // if found then return the Appointment
+        res.send(result)
+    } catch (err) {
+        console.log("Error: ", err.message)
+        res.status(404).send(err.message)
+    }
+
+    
+})
+
 
 router.get('/', async (req, res) => {
     const patients = await Patient.find({}).sort('name')
