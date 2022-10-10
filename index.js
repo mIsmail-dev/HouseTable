@@ -1,22 +1,24 @@
 const morgan = require('morgan')
 const Joi = require('joi')
 Joi.objectId = require('joi-objectid')(Joi)
-const mongoose = require('mongoose')
 const express = require('express')
+const colors = require("colors")
+const dotenv = require("dotenv").config()
+const connectDB = require("./config/db")
 
 const patientRoutes = require('./routes/patientRoutes')
 const appointmentRoutes = require('./routes/appointmentRoutes')
 
 const app = express()
 
-mongoose.connect('mongodb://localhost/houseTable')
-    .then(() => console.log('Connected to MongoDb...'))
-    .catch((err) => console.log('Could not connect to MongoDb...', err.message))
+// Connect to database
+connectDB()
 
 // Added Builtin Middlewares Here
 app.use(express.json())
 app.use(morgan('tiny'))
 
+// Routes
 app.use('/api/patients', patientRoutes)
 app.use('/api/appointments', appointmentRoutes)
 
