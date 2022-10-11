@@ -47,7 +47,6 @@ const deleteAppointment = asyncHandler(async (req, res) => {
     throw new Error("The appointment with given ID was not found")
   }
 
-  //2. Remove this Appointment, also from the Appointment array of the patient.
   const patient = await Patient.findById(appointment.patient)
   if (!patient) {
     res.status(404)
@@ -55,12 +54,11 @@ const deleteAppointment = asyncHandler(async (req, res) => {
   }
   const index = patient.appointments.indexOf(req.params.id)
   if (index > -1) {
-    // only splice array when item is found
-    patient.appointments.splice(index, 1) // 2nd parameter means remove one item only
+    patient.appointments.splice(index, 1)
   }
 
   await patient.save()
-  res.send(appointment) // return the Appointment, which is deleted
+  res.send(appointment)
 })
 
 // @desc Create new appointment
@@ -69,7 +67,6 @@ const deleteAppointment = asyncHandler(async (req, res) => {
 const createAppointment = asyncHandler(async (req, res) => {
   const { error } = validate(req.body)
   if (error) {
-    // 400 - Bad Request
     res.status(404)
     throw new Error(error.details[0].message)
   }
@@ -94,7 +91,7 @@ const createAppointment = asyncHandler(async (req, res) => {
 
   //
   await newAppointment.save()
-  patient.appointments.push(newAppointment._id) // Adding the current Appointment id in its Patient Appointments Array.
+  patient.appointments.push(newAppointment._id)
   await patient.save()
   res.send(newAppointment)
 })
@@ -105,7 +102,6 @@ const createAppointment = asyncHandler(async (req, res) => {
 const updateAppointment = asyncHandler(async (req, res) => {
   const { error } = validate(req.body)
   if (error) {
-    // 400 - Bad Request
     res.status(404)
     throw new Error(error.details[0].message)
   }
@@ -171,10 +167,9 @@ const findAllAppointments = asyncHandler(async (req, res) => {
     unpaid = "true"
   }
 
-  // find Appointments with Given Query Strings Here
   const appointments = await Appointment.find()
     .and([
-      { ...(req.query.patientId ? { patient: req.query.patientId } : {}) }, // Used Optional Spread Operators for this Query
+      { ...(req.query.patientId ? { patient: req.query.patientId } : {}) },
       { ...(req.query.day ? { day: req.query.day } : {}) },
       { ...(req.query.unpaid ? { isPaid: unpaid } : {}) },
     ])
@@ -196,7 +191,6 @@ const getRemainingBill = asyncHandler(async (req, res) => {
     }
   }
 
-  // Finding Current Date & Second Date with respect to period time Here
   let today = getTodayDate()
   let numOfWeeks = getNumOfWeeks(req.query.period)
   let secondDate = getSecondDate(numOfWeeks, today)
@@ -210,14 +204,13 @@ const getRemainingBill = asyncHandler(async (req, res) => {
     )
   }
 
-  // find Appointments with Given Query Strings Here
   const appointments = await Appointment.find({
     ...(req.query.period ? { date: { $gte: secondDate, $lte: today } } : {}),
   }).and([
     { ...(req.query.patientId ? { patient: req.query.patientId } : {}) },
   ])
 
-  const requiredCurrency = req.query.currency ? req.query.currency : "usd" // Required Currency would be usd by default
+  const requiredCurrency = req.query.currency ? req.query.currency : "usd"
   const fee = getFee(appointments, requiredCurrency)
 
   const bill = {}

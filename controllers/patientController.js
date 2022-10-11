@@ -41,7 +41,6 @@ const deletePatient = asyncHandler(async (req, res) => {
 const createPatient = asyncHandler(async (req, res) => {
   const { error } = validate(req.body);
   if (error) {
-    // 400 - Bad Request
     res.status(400);
     throw new Error(error.details[0].message);
   }
@@ -64,7 +63,6 @@ const createPatient = asyncHandler(async (req, res) => {
 const updatePatient = asyncHandler(async (req, res) => {
   const { error } = validate(req.body);
   if (error) {
-    // 400 - Bad Request
     res.status(400);
     throw new Error(error.details[0].message);
   }
@@ -77,7 +75,6 @@ const updatePatient = asyncHandler(async (req, res) => {
       ownerName: req.body.ownerName,
       ownerAddress: req.body.ownerAddress,
       ownerPhoneNo: req.body.ownerPhoneNo,
-      // appointments: req.body.appointments,
     },
     {
       new: true,
@@ -100,7 +97,6 @@ const getMostPopularPet = asyncHandler(async (req, res) => {
 
   const result = {};
 
-  // 1. Finding the the most popular pet Here
   let max = 0;
   result.popularPet = patients.reduce((acc, patient) => {
     if (patient.appointments.length > max) {
@@ -112,19 +108,16 @@ const getMostPopularPet = asyncHandler(async (req, res) => {
     return acc;
   }, {});
 
-  // 2. how much money from each pet
   result.petsDetail = patients.reduce((acc, patient) => {
     const petDetail = {};
     petDetail.id = patient._id;
     petDetail.name = patient.name;
-    // Counting Patient Paid Fee
     petDetail.totalFeePaid = patient.appointments.reduce((sum, appointment) => {
       if (appointment.isPaid) {
         sum = sum + appointment.fee;
       }
       return sum;
     }, 0);
-    // Counting Patient UnPaid Fee
     petDetail.totalFeeUnPaid = patient.appointments.reduce(
       (sum, appointment) => {
         if (!appointment.isPaid) {

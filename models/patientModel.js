@@ -44,7 +44,6 @@ const patientSchema = new mongoose.Schema({
 
 const Patient = new mongoose.model('Patient', patientSchema)
 
-// check if the genre is valid according to the schema or not
 const validPatient = (patient) => {
     const schema = {
         name: Joi.string().min(5).max(255).required(),
@@ -52,7 +51,7 @@ const validPatient = (patient) => {
         ownerName: Joi.string().min(5).max(255).required(),
         ownerAddress: Joi.string().min(5).max(255).required(),
         ownerPhoneNo: Joi.string().min(5).max(55).required(),
-        appointments: Joi.array().items(Joi.objectId()), // Why appointmentsId bcz client will only appointmentsId Arr to us, he will not provide whole appointment document man. 
+        appointments: Joi.array().items(Joi.objectId()),
     }
 
     return Joi.validate(patient, schema)
