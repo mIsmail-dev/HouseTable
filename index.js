@@ -4,6 +4,7 @@ Joi.objectId = require('joi-objectid')(Joi)
 const express = require('express')
 const colors = require("colors")
 const dotenv = require("dotenv").config()
+const { notFound, errorHandler } = require("./middleware/errorMiddleware")
 const connectDB = require("./config/db")
 
 const patientRoutes = require('./routes/patientRoutes')
@@ -27,6 +28,10 @@ app.use('/api/appointments', appointmentRoutes)
 app.get('/', (req, res) => {
     res.send('App is running...')
 })
+
+// Builtin Middlewares
+app.use(notFound)
+app.use(errorHandler)
 
 const port = process.env.PORT || 8000
 app.listen(port, () => console.log(`Server running in ${process.env.NODE_ENV} mode on port ${port}`.yellow.bold))
