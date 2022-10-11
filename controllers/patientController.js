@@ -120,7 +120,6 @@ const getMostPopularPet = asyncHandler(async (req, res) => {
     // Counting Patient Paid Fee
     petDetail.totalFeePaid = patient.appointments.reduce((sum, appointment) => {
       if (appointment.isPaid) {
-        console.log("hahah");
         sum = sum + appointment.fee;
       }
       return sum;
