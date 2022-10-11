@@ -9,14 +9,16 @@ const connectDB = require("./config/db")
 const patientRoutes = require('./routes/patientRoutes')
 const appointmentRoutes = require('./routes/appointmentRoutes')
 
-const app = express()
-
 // Connect to database
 connectDB()
 
+const app = express()
+
 // Added Builtin Middlewares Here
+if (process.env.NODE_ENV === 'development') {
+    app.use(morgan('dev'))
+}
 app.use(express.json())
-app.use(morgan('tiny'))
 
 // Routes
 app.use('/api/patients', patientRoutes)
@@ -27,4 +29,4 @@ app.get('/', (req, res) => {
 })
 
 const port = process.env.PORT || 8000
-app.listen(port, () => console.log(`Listening at Port ${port}...`))
+app.listen(port, () => console.log(`Server running in ${process.env.NODE_ENV} mode on port ${port}`.yellow.bold))
