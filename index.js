@@ -27,7 +27,7 @@ app.get('/', (req, res) => {
     res.send('App is running...')
 })
 
-// Builtin Middlewares
+// Custom Middlewares
 app.use(notFound)
 app.use(errorHandler)
 
