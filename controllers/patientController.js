@@ -44,11 +44,6 @@ const deletePatient = asyncHandler(async (req, res) => {
 // @route POST /api/patients
 // @acess Public
 const createPatient = asyncHandler(async (req, res) => {
-  const { error } = validate(req.body);
-  if (error) {
-    res.status(400);
-    throw new Error(error.details[0].message);
-  }
 
   const newPatient = new Patient({
     name: req.body.name,
