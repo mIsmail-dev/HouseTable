@@ -31,7 +31,7 @@ const getAppointmentById = asyncHandler(async (req, res) => {
   )
   if (!appointment) {
     res.status(404)
-    throw new Error("The appointment with given ID was not found")
+    throw new Error(`The appointment with Id ${req.params.id} was not found`)
   }
 
   res.send(appointment)
@@ -44,13 +44,13 @@ const deleteAppointment = asyncHandler(async (req, res) => {
   const appointment = await Appointment.findByIdAndRemove(req.params.id)
   if (!appointment) {
     res.status(404)
-    throw new Error("The appointment with given ID was not found")
+    throw new Error(`The appointment with Id ${req.params.id} was not found`)
   }
 
   const patient = await Patient.findById(appointment.patient)
   if (!patient) {
     res.status(404)
-    throw new Error("The patient with given ID was not found")
+    throw new Error(`The patient with Id ${appointment.patient} was not found`)
   }
   const index = patient.appointments.indexOf(req.params.id)
   if (index > -1) {
@@ -109,7 +109,7 @@ const updateAppointment = asyncHandler(async (req, res) => {
   let appointment = await Appointment.findById(req.params.id)
   if (!appointment) {
     res.status(404)
-    throw new Error("The appointment with given ID was not found")
+    throw new Error(`The appointment with Id ${req.params.id} was not found`)
   }
 
   const patient = await Patient.findById(req.body.patientId)
@@ -156,7 +156,7 @@ const findAllAppointments = asyncHandler(async (req, res) => {
     const patient = await Patient.findById(req.query.patientId)
     if (!patient) {
       res.status(404)
-      throw new Error("The patient with given ID was not found")
+      throw new Error(`The patient with Id ${req.query.patientId} was not found`)
     }
   }
 
@@ -187,7 +187,7 @@ const getRemainingBill = asyncHandler(async (req, res) => {
     const patient = await Patient.findById(req.query.patientId)
     if (!patient) {
       res.status(404)
-      throw new Error("The patient with given ID was not found")
+      throw new Error(`The patient with Id ${req.query.patientId} was not found`)
     }
   }
 

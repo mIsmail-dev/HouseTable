@@ -21,7 +21,7 @@ const getPatientById = asyncHandler(async (req, res) => {
   const patient = await Patient.findById(req.params.id);
   if (!patient) {
     res.status(404);
-    throw new Error("The patient with given ID was not found");
+    throw new Error(`The patient with Id ${req.params.id} was not found`);
   }
 
   res.send(patient);
@@ -34,7 +34,7 @@ const deletePatient = asyncHandler(async (req, res) => {
   const patient = await Patient.findByIdAndRemove(req.params.id);
   if (!patient) {
     res.status(404);
-    throw new Error("The patient with given ID was not found");
+    throw new Error(`The patient with Id ${req.params.id} was not found`);
   }
 
   res.send(patient);
@@ -88,7 +88,7 @@ const updatePatient = asyncHandler(async (req, res) => {
 
   if (!patient) {
     res.status(404);
-    throw new Error("The patient with given ID was not found");
+    throw new Error(`The patient with Id ${req.params.id} was not found`);
   }
 
   res.send(patient);
