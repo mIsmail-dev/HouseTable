@@ -36,6 +36,16 @@ const validCurrency = (currency) => {
     return validCurrency.includes(currency)
 }
 
+const sumFee = (appointments, isPaid) => {
+    const total = appointments.reduce((sum, appointment) => {
+        if (appointment.isPaid === isPaid) {
+          sum = sum + appointment.fee;
+        }
+        return sum;
+      }, 0);
+    return total
+}
+
 const getFee = (appointments, requiredCurrency) => {
     const currencyConversion = {
         usd: 1.02, // Usd to eur
@@ -87,21 +97,8 @@ const getEveryPetDetails = (patients) => {
         const petDetail = {};
         petDetail.id = patient._id;
         petDetail.name = patient.name;
-        petDetail.totalFeePaid = patient.appointments.reduce((sum, appointment) => {
-          if (appointment.isPaid) {
-            sum = sum + appointment.fee;
-          }
-          return sum;
-        }, 0);
-        petDetail.totalFeeUnPaid = patient.appointments.reduce(
-          (sum, appointment) => {
-            if (!appointment.isPaid) {
-              sum = sum + appointment.fee;
-            }
-            return sum;
-          },
-          0
-        );
+        petDetail.totalFeePaid = sumFee(patient.appointments, true)
+        petDetail.totalFeeUnPaid = sumFee(patient.appointments, false)
     
         acc.push(petDetail);
         return acc;
