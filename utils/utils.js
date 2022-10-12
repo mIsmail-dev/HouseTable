@@ -77,6 +77,51 @@ const getFee = (appointments, requiredCurrency) => {
     return fee
 }
 
+// will return most Popular pet
+const getPopularPet = (patients) => {
+    let max = 0;
+    const popularPet = patients.reduce((acc, patient) => {
+    if (patient.appointments.length > max) {
+      max = patient.appointments.length;
+      acc.id = patient._id;
+      acc.name = patient.name;
+      acc.totalAppointments = max;
+    }
+    return acc;
+  }, {});
+
+  return popularPet
+}
+
+// will return every pet Details
+const getEveryPetDetails = (patients) => {
+    const petsDetail = patients.reduce((acc, patient) => {
+        const petDetail = {};
+        petDetail.id = patient._id;
+        petDetail.name = patient.name;
+        petDetail.totalFeePaid = patient.appointments.reduce((sum, appointment) => {
+          if (appointment.isPaid) {
+            sum = sum + appointment.fee;
+          }
+          return sum;
+        }, 0);
+        petDetail.totalFeeUnPaid = patient.appointments.reduce(
+          (sum, appointment) => {
+            if (!appointment.isPaid) {
+              sum = sum + appointment.fee;
+            }
+            return sum;
+          },
+          0
+        );
+    
+        acc.push(petDetail);
+        return acc;
+      }, []);
+
+      return petsDetail
+}
+
 // Exports Here
 module.exports.getTodayDate = getTodayDate
 module.exports.getSecondDate = getSecondDate
@@ -84,3 +129,5 @@ module.exports.getStringDate = getStringDate
 module.exports.getNumOfWeeks = getNumOfWeeks
 module.exports.validCurrency = validCurrency
 module.exports.getFee = getFee
+module.exports.getPopularPet = getPopularPet
+module.exports.getEveryPetDetails = getEveryPetDetails

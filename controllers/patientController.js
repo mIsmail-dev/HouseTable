@@ -1,6 +1,11 @@
 const asyncHandler = require("express-async-handler");
 const { Patient, validate } = require("../models/patientModel");
 
+const {
+    getPopularPet,
+    getEveryPetDetails,
+} = require('../utils/utils')
+
 // @desc Get all patients
 // @route GET /api/patients
 // @acess Public
@@ -96,41 +101,8 @@ const getMostPopularPet = asyncHandler(async (req, res) => {
   const patients = await Patient.find().populate("appointments", "fee isPaid");
 
   const result = {};
-
-  let max = 0;
-  result.popularPet = patients.reduce((acc, patient) => {
-    if (patient.appointments.length > max) {
-      max = patient.appointments.length;
-      acc.id = patient._id;
-      acc.name = patient.name;
-      acc.totalAppointments = max;
-    }
-    return acc;
-  }, {});
-
-  result.petsDetail = patients.reduce((acc, patient) => {
-    const petDetail = {};
-    petDetail.id = patient._id;
-    petDetail.name = patient.name;
-    petDetail.totalFeePaid = patient.appointments.reduce((sum, appointment) => {
-      if (appointment.isPaid) {
-        sum = sum + appointment.fee;
-      }
-      return sum;
-    }, 0);
-    petDetail.totalFeeUnPaid = patient.appointments.reduce(
-      (sum, appointment) => {
-        if (!appointment.isPaid) {
-          sum = sum + appointment.fee;
-        }
-        return sum;
-      },
-      0
-    );
-
-    acc.push(petDetail);
-    return acc;
-  }, []);
+  result.popularPet = getPopularPet(patients)
+  result.petsDetail = getEveryPetDetails(patients)
 
   res.send(result);
 });
