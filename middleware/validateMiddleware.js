@@ -20,6 +20,8 @@ const validationHandler = (req, res, next) => {
     next()
 }
 
+// Factory Pattern & Buildin Pattern - See it.
+
 // Exports Here
 module.exports = {
     validationHandler,
