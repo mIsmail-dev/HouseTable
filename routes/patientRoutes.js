@@ -8,8 +8,9 @@ const {
     deletePatient,
     getMostPopularPet
 } = require('../controllers/patientController')
+const { validationHandler } = require('../middleware/validateMiddleware')
 
-router.route('/').get(getPatients).post(createPatient)
+router.route('/').get(getPatients).post(validationHandler, createPatient)
 router.route('/mostPopular').get(getMostPopularPet)
 router
     .route('/:id')

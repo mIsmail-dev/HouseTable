@@ -1,47 +1,51 @@
-// will return today Date
 const getTodayDate = () => {
     let today = new Date()
-    const dd = String(today.getDate() + 1).padStart(2, '0') // added 1 bcz it was giving one previous day like if today is 7 it will give 6.
-    const mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+    const dd = String(today.getDate() + 1).padStart(2, '0')
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
     const yyyy = today.getFullYear()
     today = mm + '-' + dd + '-' + yyyy;
     return new Date(today)
 }
 
-// will return second Date w.r.t to numOfWeeks. Basically Current Date - numofWeeks.
 const getSecondDate = (numOfWeeks, todayDate) => {
     let secondDate = new Date()
     secondDate.setDate(todayDate.getDate() - numOfWeeks * 7)
     return secondDate
 }
 
-// will convert iso string into a string and will return it
 const getStringDate = (today) => {
-    const dd = String(today.getDate()).padStart(2, '0') // added 1 bcz it was giving one previous day like if today is 7 it will give 6.
-    const mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+    const dd = String(today.getDate()).padStart(2, '0')
+    const mm = String(today.getMonth() + 1).padStart(2, '0')
     const yyyy = today.getFullYear()
     today = mm + '-' + dd + '-' + yyyy;
     return today
 }
 
-// will return numOfWeeks w.r.t time period(weekly,  monthly, yearly)
 const getNumOfWeeks = (period) => {
     if(period === "weekly") {
         return 1
     } else if(period === "monthly") {
         return 4
     } else {
-        return 12 // for yearly
+        return 12
     }
 }
 
-// will check if the given currency is valid or not
 const validCurrency = (currency) => {
     const validCurrency = ['usd', 'eur']
     return validCurrency.includes(currency)
 }
 
-// Will return Paid & UnPaid Fee of all appointments
+const sumFee = (appointments, isPaid) => {
+    const total = appointments.reduce((sum, appointment) => {
+        if (appointment.isPaid === isPaid) {
+          sum = sum + appointment.fee;
+        }
+        return sum;
+      }, 0);
+    return total
+}
+
 const getFee = (appointments, requiredCurrency) => {
     const currencyConversion = {
         usd: 1.02, // Usd to eur
@@ -49,8 +53,6 @@ const getFee = (appointments, requiredCurrency) => {
     }
 
     const fee = {}
-
-    // Finding the sum of Unpaid Bills
     fee.unpaid = appointments.reduce((acc, appointment) => {
         if(!appointment.isPaid) {
             if(appointment.currency !== requiredCurrency) {
@@ -61,8 +63,6 @@ const getFee = (appointments, requiredCurrency) => {
         }
         return acc
     }, 0)
-
-    // Finding the sum of paid Bills
     fee.paid = appointments.reduce((acc, appointment) => {
         if(appointment.isPaid) {
             if(appointment.currency !== requiredCurrency) {
@@ -77,6 +77,36 @@ const getFee = (appointments, requiredCurrency) => {
     return fee
 }
 
+const getPopularPet = (patients) => {
+    let max = 0;
+    const popularPet = patients.reduce((acc, patient) => {
+    if (patient.appointments.length > max) {
+      max = patient.appointments.length;
+      acc.id = patient._id;
+      acc.name = patient.name;
+      acc.totalAppointments = max;
+    }
+    return acc;
+  }, {});
+
+  return popularPet
+}
+
+const getEveryPetDetails = (patients) => {
+    const petsDetail = patients.reduce((acc, patient) => {
+        const petDetail = {};
+        petDetail.id = patient._id;
+        petDetail.name = patient.name;
+        petDetail.totalFeePaid = sumFee(patient.appointments, true)
+        petDetail.totalFeeUnPaid = sumFee(patient.appointments, false)
+    
+        acc.push(petDetail);
+        return acc;
+      }, []);
+
+      return petsDetail
+}
+
 // Exports Here
 module.exports.getTodayDate = getTodayDate
 module.exports.getSecondDate = getSecondDate
@@ -84,3 +114,5 @@ module.exports.getStringDate = getStringDate
 module.exports.getNumOfWeeks = getNumOfWeeks
 module.exports.validCurrency = validCurrency
 module.exports.getFee = getFee
+module.exports.getPopularPet = getPopularPet
+module.exports.getEveryPetDetails = getEveryPetDetails

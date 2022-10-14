@@ -35,7 +35,7 @@ const appointmentSchema = new mongoose.Schema({
         enum: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
         required: true,
     },
-    date: { // will store the date
+    date: {
         type: Date,
     },
     patient: {
@@ -47,7 +47,6 @@ const appointmentSchema = new mongoose.Schema({
 
 const Appointment = new mongoose.model('Appointment', appointmentSchema)
 
-// check if the appointment is valid according to the schema or not
 const validAppointment = (appointment) => {
     const schema = {
         startTime: Joi.date().iso().required(),
@@ -58,7 +57,7 @@ const validAppointment = (appointment) => {
         isPaid: Joi.boolean(),
         day: Joi.string().required(),
         date: Joi.date().iso().required(),
-        patientId: Joi.objectId().required(), // Why patientId bcz client will only patientId to us, he will not provide whole patient man. 
+        patientId: Joi.objectId().required(),
     }
 
     return Joi.validate(appointment, schema)

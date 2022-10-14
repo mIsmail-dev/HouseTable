@@ -1,5 +1,3 @@
-const {Appointment, validate} = require('../models/appointmentModel')
-const { Patient } = require('../models/patientModel')
 const express = require('express')
 const router = express.Router()
 const {
