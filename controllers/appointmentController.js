@@ -1,4 +1,5 @@
 const asyncHandler = require("express-async-handler")
+const mongoose = require('mongoose')
 
 const { Appointment, validate } = require("../models/appointmentModel")
 const { Patient } = require("../models/patientModel")
@@ -47,17 +48,18 @@ const deleteAppointment = asyncHandler(async (req, res) => {
     throw new Error(`The appointment with Id ${req.params.id} was not found`)
   }
 
-  const patient = await Patient.findById(appointment.patient)
-  if (!patient) {
-    res.status(404)
-    throw new Error(`The patient with Id ${appointment.patient} was not found`)
-  }
-  const index = patient.appointments.indexOf(req.params.id)
-  if (index > -1) {
-    patient.appointments.splice(index, 1)
-  }
+  await Patient.updateOne({_id: appointment.patient}, { $pull: { appointments:  appointment._id} })
+  // const patient = await Patient.findById(appointment.patient)
+  // if (!patient) {
+  //   res.status(404)
+  //   throw new Error(`The patient with Id ${appointment.patient} was not found`)
+  // }
+  // const index = patient.appointments.indexOf(req.params.id)
+  // if (index > -1) {
+  //   patient.appointments.splice(index, 1)
+  // }
 
-  await patient.save()
+  // await patient.save()
   res.send(appointment)
 })
 
@@ -91,8 +93,9 @@ const createAppointment = asyncHandler(async (req, res) => {
 
   //
   await newAppointment.save()
-  patient.appointments.push(newAppointment._id)
-  await patient.save()
+  // patient.appointments.push(newAppointment._id)
+  // await patient.save()
+  await Patient.updateOne( {_id: req.body.patientId}, { $push: { "appointments": newAppointment._id } })
   res.send(newAppointment)
 })
 
