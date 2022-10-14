@@ -163,12 +163,7 @@ const findAllAppointments = asyncHandler(async (req, res) => {
     }
   }
 
-  let unpaid
-  if (req.query.unpaid === "true") {
-    unpaid = "false"
-  } else {
-    unpaid = "true"
-  }
+  const unpaid = (req.query.unpaid === "true") ? "false" : "true"
 
   const appointments = await Appointment.find()
     .and([
